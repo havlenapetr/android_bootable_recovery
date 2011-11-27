@@ -16,6 +16,7 @@ LOCAL_SRC_FILES := \
     encryptedfs_provisioning.c
 
 LOCAL_MODULE := recovery
+LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT_SBIN)
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
