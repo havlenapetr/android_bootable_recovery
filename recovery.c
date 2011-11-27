@@ -284,9 +284,9 @@ finish_recovery(const char *send_intent) {
     }
 
     // Copy logs to cache so the system can find out what happened.
-    /*copy_log_file(LOG_FILE, true);
+    copy_log_file(LOG_FILE, true);
     copy_log_file(LAST_LOG_FILE, false);
-    chmod(LAST_LOG_FILE, 0640);*/
+    chmod(LAST_LOG_FILE, 0640);
 
     // Reset to mormal system boot so recovery won't cycle indefinitely.
     struct bootloader_message boot;
@@ -646,7 +646,7 @@ prompt_and_wait() {
     char** headers = prepend_title((const char**)MENU_HEADERS);
 
     for (;;) {
-        //finish_recovery(NULL);
+        finish_recovery(NULL);
         ui_reset_progress();
         int chosen_item = get_menu_selection(headers, MENU_ITEMS, 0, 0);
         // device-specific code may take some action here.  It may
@@ -705,7 +705,7 @@ main(int argc, char **argv) {
     ui_init();
     ui_set_background(BACKGROUND_ICON_INSTALLING);
     load_volume_table();
-    //get_args(&argc, &argv);
+    get_args(&argc, &argv);
     int previous_runs = 0;
     const char *send_intent = NULL;
     const char *update_package = NULL;
@@ -814,7 +814,7 @@ main(int argc, char **argv) {
     }
 
     // Otherwise, get ready to boot the main system...
-    //finish_recovery(send_intent);
+    finish_recovery(send_intent);
     ui_print("Rebooting...\n");
     sync();
     reboot(RB_AUTOBOOT);
