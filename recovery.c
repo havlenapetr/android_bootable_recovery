@@ -284,9 +284,9 @@ finish_recovery(const char *send_intent) {
     }
 
     // Copy logs to cache so the system can find out what happened.
-    copy_log_file(LOG_FILE, true);
+    /*copy_log_file(LOG_FILE, true);
     copy_log_file(LAST_LOG_FILE, false);
-    chmod(LAST_LOG_FILE, 0640);
+    chmod(LAST_LOG_FILE, 0640);*/
 
     // Reset to mormal system boot so recovery won't cycle indefinitely.
     struct bootloader_message boot;
@@ -554,6 +554,7 @@ sdcard_directory(const char* path) {
 
         char* item = zips[chosen_item];
         int item_len = strlen(item);
+        LOGI("chosen item is: %s", item);
         if (chosen_item == 0) {          // item 0 is always "../"
             // go up but continue browsing (if the caller is sdcard_directory)
             result = -1;
@@ -568,12 +569,15 @@ sdcard_directory(const char* path) {
             result = sdcard_directory(new_path);
             if (result >= 0) break;
         } else {
+            LOGI("preparing installing: %s", item);
             // selected a zip file:  attempt to install it, and return
             // the status to the caller.
             char new_path[PATH_MAX];
             strlcpy(new_path, path, PATH_MAX);
             strlcat(new_path, "/", PATH_MAX);
             strlcat(new_path, item, PATH_MAX);
+
+            LOGI("prepared");
 
             ui_print("\n-- Install %s ...\n", path);
             set_sdcard_update_bootloader_message();
@@ -642,11 +646,9 @@ prompt_and_wait() {
     char** headers = prepend_title((const char**)MENU_HEADERS);
 
     for (;;) {
-        finish_recovery(NULL);
+        //finish_recovery(NULL);
         ui_reset_progress();
-
         int chosen_item = get_menu_selection(headers, MENU_ITEMS, 0, 0);
-
         // device-specific code may take some action here.  It may
         // return one of the core actions handled in the switch
         // statement below.
@@ -696,15 +698,14 @@ main(int argc, char **argv) {
     time_t start = time(NULL);
 
     // If these fail, there's not really anywhere to complain...
-    freopen(TEMPORARY_LOG_FILE, "a", stdout); setbuf(stdout, NULL);
-    freopen(TEMPORARY_LOG_FILE, "a", stderr); setbuf(stderr, NULL);
+    //freopen(TEMPORARY_LOG_FILE, "a", stdout); setbuf(stdout, NULL);
+    //freopen(TEMPORARY_LOG_FILE, "a", stderr); setbuf(stderr, NULL);
     printf("Starting recovery on %s", ctime(&start));
 
     ui_init();
     ui_set_background(BACKGROUND_ICON_INSTALLING);
     load_volume_table();
-    get_args(&argc, &argv);
-
+    //get_args(&argc, &argv);
     int previous_runs = 0;
     const char *send_intent = NULL;
     const char *update_package = NULL;
@@ -712,7 +713,6 @@ main(int argc, char **argv) {
     int wipe_data = 0, wipe_cache = 0;
     int toggle_secure_fs = 0;
     encrypted_fs_info encrypted_fs_data;
-
     int arg;
     while ((arg = getopt_long(argc, argv, "", OPTIONS, NULL)) != -1) {
         switch (arg) {
@@ -728,7 +728,6 @@ main(int argc, char **argv) {
             continue;
         }
     }
-
     device_recovery_start();
 
     printf("Command:");
@@ -815,7 +814,7 @@ main(int argc, char **argv) {
     }
 
     // Otherwise, get ready to boot the main system...
-    finish_recovery(send_intent);
+    //finish_recovery(send_intent);
     ui_print("Rebooting...\n");
     sync();
     reboot(RB_AUTOBOOT);
