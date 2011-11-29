@@ -233,6 +233,31 @@ exit:
     return NULL;
 }
 
+extern char**
+prepend_title(const char** headers);
+
+extern int
+get_menu_selection(char** headers, char** items, int menu_only,
+                   int initial_selection);
+
+static int
+install_unverified_file()
+{
+    char** title_headers = NULL;
+
+    char* headers[] = { "Confirm install unverified package?",
+        "",
+        NULL };
+    title_headers = prepend_title((const char**)headers);
+
+    char* items[] = { " No",
+        " Yes -- install anyway",   // [1]
+        NULL };
+
+    int chosen_item = get_menu_selection(title_headers, items, 1, 0);
+    return chosen_item == 1 ? 0 : -1;
+}
+
 int
 install_package(const char *path)
 {
@@ -268,7 +293,10 @@ install_package(const char *path)
     LOGI("verify_file returned %d\n", err);
     if (err != VERIFY_SUCCESS) {
         LOGE("signature verification failed\n");
-        return INSTALL_CORRUPT;
+        int res = install_unverified_file();
+        if(res < 0) {
+            return INSTALL_CORRUPT;
+        }
     }
 
     /* Try to open the package.

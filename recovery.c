@@ -408,7 +408,7 @@ copy_sideloaded_package(const char* original_path) {
   return strdup(copy_path);
 }
 
-static char**
+char**
 prepend_title(const char** headers) {
     char* title[] = { "Android system recovery <"
                           EXPAND(RECOVERY_API_VERSION) "e>",
@@ -431,7 +431,7 @@ prepend_title(const char** headers) {
     return new_headers;
 }
 
-static int
+int
 get_menu_selection(char** headers, char** items, int menu_only,
                    int initial_selection) {
     // throw away keys pressed previously, so user doesn't
