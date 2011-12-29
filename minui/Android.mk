@@ -1,7 +1,10 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := graphics.c events.c resources.c
+LOCAL_SRC_FILES := events.c resources.c
+ifeq ($(TARGET_RECOVERY_GRAPHICS_LIB),)
+  LOCAL_SRC_FILES += graphics.c
+endif
 
 LOCAL_C_INCLUDES +=\
     external/libpng\
