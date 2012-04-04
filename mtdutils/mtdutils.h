@@ -19,6 +19,12 @@
 
 #include <sys/types.h>  // for size_t, etc.
 
+struct MtdPartition {
+    int device_index;
+    unsigned int size;
+    unsigned int erase_size;
+    char *name;
+};
 typedef struct MtdPartition MtdPartition;
 
 int mtd_scan_partitions(void);
@@ -52,5 +58,11 @@ ssize_t mtd_write_data(MtdWriteContext *, const char *data, size_t data_len);
 off_t mtd_erase_blocks(MtdWriteContext *, int blocks);  /* 0 ok, -1 for all */
 off_t mtd_find_write_start(MtdWriteContext *ctx, off_t pos);
 int mtd_write_close(MtdWriteContext *);
+
+#ifdef USES_BML_OVER_MTD
+int bml_over_mtd_flash_image(const MtdPartition* mtd, int start_block,
+                             const MtdPartition* reservoir, int start_block_reservoir,
+                             const char* image);
+#endif
 
 #endif  // MTDUTILS_H_
