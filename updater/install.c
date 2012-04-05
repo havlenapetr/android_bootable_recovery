@@ -782,6 +782,69 @@ static bool write_raw_image_cb(const unsigned char* data,
     return false;
 }
 
+#ifdef USES_BML_OVER_MTD
+Value* WriteBmlOverMtdImageFn(const char* name, State* state, int argc, Expr* argv[]) {
+    char* result = NULL;
+
+    Value* partition_value;
+    Value* start_block_value;
+    Value* contents;
+    if (ReadValueArgs(state, argv, 3, &contents, &partition_value, &start_block_value) < 0) {
+        return NULL;
+    }
+
+    if (partition_value->type != VAL_STRING) {
+        ErrorAbort(state, "partition argument to %s must be string", name);
+        goto done;
+    }
+    char* partition = partition_value->data;
+    if (strlen(partition) == 0) {
+        ErrorAbort(state, "partition argument to %s can't be empty", name);
+        goto done;
+    }
+
+    if (start_block_value->type != VAL_STRING) {
+        ErrorAbort(state, "start_block argument %s must be string", name);
+        goto done;
+    }
+    int start_block = atoi(start_block_value->data);
+
+    if (contents->type == VAL_STRING && strlen((char*) contents->data) == 0) {
+        ErrorAbort(state, "file argument to %s can't be empty", name);
+        goto done;
+    }
+
+    mtd_scan_partitions();
+    const MtdPartition* mtd = mtd_find_partition_by_name(partition);
+    if (mtd == NULL) {
+        fprintf(stderr, "%s: no mtd partition named \"%s\"\n", name, partition);
+        result = strdup("");
+        goto done;
+    }
+    const MtdPartition* reservoir = mtd_find_partition_by_name("reservoir");
+    if (reservoir == NULL) {
+        fprintf(stderr, "%s: no mtd partition named \"%s\"\n", name, reservoir);
+        result = strdup("");
+        goto done;
+    }
+    int start_block_reservoir = 2004;
+
+    char* filename = contents->data;
+    int retVal = bml_over_mtd_flash_image(mtd, start_block, reservoir,
+            start_block_reservoir, filename);
+
+    printf("%s %s partition\n",
+           retVal == 0 ? "wrote" : "failed to write", partition);
+
+    result = retVal == 0 ? partition : strdup("");
+
+done:
+    if (result != partition) FreeValue(partition_value);
+    FreeValue(contents);
+    return StringValue(result);
+}
+#endif
+
 // write_raw_image(filename_or_blob, partition)
 Value* WriteRawImageFn(const char* name, State* state, int argc, Expr* argv[]) {
     char* result = NULL;
@@ -1190,6 +1253,9 @@ void RegisterInstallFunctions() {
     RegisterFunction("getprop", GetPropFn);
     RegisterFunction("file_getprop", FileGetPropFn);
     RegisterFunction("write_raw_image", WriteRawImageFn);
+#ifdef USES_BML_OVER_MTD
+    RegisterFunction("write_bml_over_mtd_image", WriteBmlOverMtdImageFn);
+#endif
 
     RegisterFunction("apply_patch", ApplyPatchFn);
     RegisterFunction("apply_patch_check", ApplyPatchCheckFn);
