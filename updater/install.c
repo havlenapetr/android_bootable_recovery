@@ -830,13 +830,16 @@ Value* WriteBmlOverMtdImageFn(const char* name, State* state, int argc, Expr* ar
     int start_block_reservoir = 2004;
 
     char* filename = contents->data;
-    int retVal = bml_over_mtd_flash_image(mtd, start_block, reservoir,
-            start_block_reservoir, filename);
-
+    bool success = bml_over_mtd_flash_image(mtd, start_block, reservoir,
+            start_block_reservoir, filename) == 0;
+    if (!success) {
+        fprintf(stderr, "bml_over_mtd_flash_image to %s failed: %s\n",
+                partition, strerror(errno));
+    }
     printf("%s %s partition\n",
-           retVal == 0 ? "wrote" : "failed to write", partition);
+           success ? "wrote" : "failed to write", partition);
 
-    result = retVal == 0 ? partition : strdup("");
+    result = success ? partition : strdup("");
 
 done:
     if (result != partition) FreeValue(partition_value);
