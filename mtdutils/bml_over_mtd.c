@@ -705,3 +705,22 @@ static int scan_partition(const MtdPartition* pPart)
     }
     return -1 ;
 }
+
+int bml_over_mtd_flash_image(const MtdPartition* mtd, int start_block,
+                             const MtdPartition* reservoir, int start_block_reservoir,
+                             const char* image)
+{
+    int scanResult = scan_partition(mtd);
+    const unsigned short* mapping = CreateBlockMapping(mtd, start_block,
+            reservoir, start_block_reservoir);
+
+    if (!mapping && scanResult == 0) {
+        mapping = CreateEmptyBlockMapping(mtd);
+    }
+    if (!mapping)
+        return -1;
+
+    int retVal = flash_bml_partition(mtd, reservoir, mapping, image);
+    ReleaseBlockMapping(mapping);
+    return retVal;
+}

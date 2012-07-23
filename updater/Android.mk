@@ -24,6 +24,10 @@ LOCAL_C_INCLUDES += system/extras/ext4_utils
 LOCAL_STATIC_LIBRARIES += libext4_utils libz
 endif
 
+ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),aries)
+LOCAL_CFLAGS += -DUSES_BML_OVER_MTD
+endif
+
 ifeq ($(HAVE_SELINUX), true)
 LOCAL_C_INCLUDES += external/libselinux/include
 LOCAL_STATIC_LIBRARIES += libselinux
