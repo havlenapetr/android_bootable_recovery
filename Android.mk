@@ -14,6 +14,9 @@ LOCAL_SRC_FILES := \
     adb_install.cpp
 
 LOCAL_MODULE := recovery
+ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),aries)
+LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT_SBIN)
+endif
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
